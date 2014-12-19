@@ -1,5 +1,4 @@
-Exiten dos configuraciones para el buildout buildoutPHA_NOPG.cfg no instala postgres dentro del entorno virtual y no lo gestiona bajo supervisor. En este caso es necsario entrar modificar el script par aadecuarlo al postgres al que se debe conectar. ATENCIÓN: Las modificaciones en este sript no deben subirse posteriormente a este repositorio
-El otro archivo buildoutPHA.cfg sí instala postgres y no es necesario (ni se debe) modificar nada sobre él, salvo que sea alguna propuesta de mejora de la configuración o gestión
+En este repositorio el fichero de configuración de buildout es buildout.cfg nos instala postgres dentro del entorno virtual y no lo gestiona bajo supervisor. En este caso es necsario entrar modificar el script para  adecuarlo al postgres al que se debe conectar. ATENCIÓN: Las modificaciones en este sript no deben subirse posteriormente a este repositorio
 
 # Buildout base para proyectos con OpenERP y PostgreSQL
 OpenERP master en el base, PostgreSQL 9.3.4 y Supervisord 3.0
@@ -8,12 +7,12 @@ OpenERP master en el base, PostgreSQL 9.3.4 y Supervisord 3.0
 - También ejecuta la instancia de PostgreSQL
 - Si existe un archivo dump.sql, el sistema generará la base de datos con ese dump
 - Si existe  un archivo frozen.cfg es el que se debeía usar ya que contiene las revisiones aprobadas
-- PostgreSQL se compila y corre bajo el usuario user (no es necesario loguearse como root), se habilita al autentificación "trust" para conexiones locales. Más info en more http://www.postgresql.org/docs/9.3/static/auth-methods.html
+- PostgreSQL se compila y corre bajo el usuario user (no es necesario loguearse como root), se habilita al autentificación "trust" para conexiones locales. Más info en: http://www.postgresql.org/docs/9.3/static/auth-methods.html
 - Existen plantillas para los archivo de configuración de Postgres que se pueden modificar para cada proyecto.
  
 
-# Uso (adaptado)
-En caso de no haberse hecho antes en la máquina en la que se vaya a realizar, instalar las dependencias que mar Anybox
+# Uso
+En caso de no haberse hecho antes en la máquina en la que se vaya a realizar, instalar las dependencias que marca Anybox
 - Añadir el repo a /etc/apt/sources.list:
 ```
 $ deb http://apt.anybox.fr/openerp common main
@@ -27,17 +26,13 @@ $ sudo apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 0xE38CEB07
 $ sudo apt-get update
 $ sudo apt-get install openerp-server-system-build-deps
 ```
-- Para poder compilar e instalar postgres (debemos valorar si queremos hacerlo siempre), es necesario instalar el siguiente paquete (no e sla solución ideal, debería poder hacerlo el propio buildout, pero de momento queda así)
+- Para poder compilar e instalar postgres (debemos valorar si queremos hacerlo siempre), es necesario instalar el siguiente paquete (no es la solución ideal, debería poder hacerlo el propio buildout, pero de momento queda así)
 ```
 $ sudo apt-get install libreadline-dev
 ```
 - Descargar el  repositorio de buildouts :
 ```
-$ git clone https://github.com/Pexego/PXGO_00064_2014_PHA.git <ubicacion_local_repo>
-```
-- [EN REVISIÓN] Hacer checkout de la rama deseada según proyecto
-```
-$ git checkout master
+$ git clone https://github.com/Pexego/Odoo_8_base.git <ubicacion_local_repo>
 ```
 - Crear un virtualenv dentro de la carpeta del respositorio. Esto podría ser opcional, obligatorio para desarrollo o servidor de pruebas, tal vez podríamos no hacerlo para un despliegue en producción. Si no está instalado, instalar el paquete de virtualenv
 ```
@@ -45,34 +40,32 @@ $ sudo apt-get install python-virtualenv
 $ cd <ubicacion_local_repo>
 $ virtualenv sandbox --no-setuptools
 ```
-- Crear la carpeta eggs (no se crea al vuelo, ¿debería?
+- Crear la carpeta eggs (no se crea al vuelo, ¿debería?)
 ```
 $ mkdir eggs
 ```
-- Ahora procedemos a ehecutar el buildout en nuestro entorno virtual
+- Ahora procedemos a ejecutar el buildout en nuestro entorno virtual
 ```
 $ sandbox/bin/python bootstrap.py -c <configuracion_elegida>
+$ bin/buildout -c <configuracion_elegida>
 ```
+- Al terminar dará un error porque no encuentra el postgresql arrancado, tendremos que lanzarlo manualmente.
 - Ejecutar Supervisor, encargado de lanzar los servicios postgresql y odoo
 ```
 $ bin/supervisord
 ```
-- No crea carpeta project-addons, crearla a mano
-```
-$ mkdir project-addons
-```
-- Y por último
+- Y por último de nuevo:
 ```
 $ bin/buildout -c <configuracion_elegida>
 ```
 - Urls
-- Supervisor : http://localhost:9003
-- Odoo: http://localhost:9169
+- Supervisor : http://localhost:9005
+- Odoo: http://localhost:9469
       admin//admin
 
 ## Configurar OpenERP
 Archivo de configuración: etc/openerp.cfg, si sequieren cambiar opciones en  openerp.cfg, no se debe editar el fichero,
-si no añadirlas a la sección [openerp] deñ buildout.cfg
+si no añadirlas a la sección [openerp] del buildout.cfg
 y establecer esas opciones .'add_option' = value, donde 'add_option'  y ejecutar buildout otra vez.
 
 Por ejmplo: cambiar el nivel de logging de OpenERP
@@ -84,8 +77,7 @@ options.log_handler = [':ERROR']
 ...
 ```
 
-Si se quiere jeecutar más de una instancia de OpenERP, se deben cambiar los puertos,
-please change ports:
+Si se quiere ejecutar más de una instancia de OpenERP, se deben cambiar los puertos:
 ```
 openerp_xmlrpc_port = 8069  (8069 default openerp)
 openerp_xmlrpcs_port = 8071 (8071 default openerp)
